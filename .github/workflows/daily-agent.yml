@@ -1,0 +1,46 @@
+name: Daily AI Content Agent
+
+on:
+  schedule:
+    # Runs at 11:30 AM UTC every day (5:00 PM IST)
+    - cron: '30 11 * * *'
+  workflow_dispatch: # This adds a "Run Now" button on GitHub so you can test it manually!
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+    
+    # Needs permission to push code back to your repo
+    permissions:
+      contents: write 
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run AI Agent
+        run: node index.js
+        env:
+          # Pull keys from GitHub Secrets safely
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
+
+      - name: Commit and Push generated files
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "🤖 Auto-generated Daily Post" || echo "No changes to commit"
+          git push

@@ -1,0 +1,20 @@
+{
+  "name": "ai-agent",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node scheduler/cronJob.js",
+    "test-run": "node -e \"require('./index').runDailyContentAgent()\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@google/genai": "^1.44.0",
+    "dotenv": "^17.3.1",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^8.0.2"
+  }
+}
