@@ -5,7 +5,7 @@ function startScheduler() {
   console.log('Starting Scheduler. Cron expression: "0 17 * * *", Timezone: Asia/Kolkata');
   
   // Schedule task to run every day at 5:00 PM Asia/Kolkata
-  cron.schedule('0 5 * * *', async () => {
+  cron.schedule('0 10 * * *', async () => {
     console.log('CRON TRIGGERED: Running daily content agent...');
     await runDailyContentAgent();
   }, {
