@@ -32,13 +32,13 @@ jobs:
       - name: Run AI Agent
         run: node index.js
         env:
-          # Pull keys from GitHub Secrets safely
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           TO_EMAIL: ${{ secrets.TO_EMAIL }}
+          WEBSITE_API_URL: ${{ secrets.WEBSITE_API_URL }}
 
       - name: Commit and Push generated files
         run: |
@@ -47,3 +47,32 @@ jobs:
           git add .
           git commit -m "🤖 Auto-generated Daily Post" || echo "No changes to commit"
           git push
+
+      - name: Push post to Content Publisher website (Vercel)
+        run: |
+          DATE=$(date -u +%Y-%m-%d)
+          POST_FILE="data/posts/${DATE}.json"
+
+          if [ ! -f "$POST_FILE" ]; then
+            echo "No post file found for today (${POST_FILE}). Skipping."
+            exit 0
+          fi
+
+          echo "Found post: $POST_FILE"
+
+          git clone https://x-access-token:${{ secrets.CONTENT_PUBLISHER_PAT }}@github.com/RaizianOfficial/content-publisher.git /tmp/content-publisher
+
+          mkdir -p /tmp/content-publisher/data/posts
+          cp "$POST_FILE" /tmp/content-publisher/data/posts/
+
+          cd /tmp/content-publisher
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/posts/
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "📝 New AI post: ${DATE}"
+            git push origin main
+            echo "✅ Post pushed to content-publisher. Vercel will auto-redeploy."
+          else
+            echo "Post already exists in content-publisher."
+          fi
